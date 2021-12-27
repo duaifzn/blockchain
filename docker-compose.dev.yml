@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  mongo-blockchain:
+    container_name: mongo-blockchain
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27021:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: blockchain
+    # volumes:
+    #   - ./docker/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - blockchain
+
+  blockchain-node-1:
+    container_name: blockchain-node-1
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      nodeUrl: http://blockchain-node-1:3000
+      nodesUrls: '[]'
+    ports:
+      - 3001:3000
+    command: npm run dev
+    depends_on:
+      - mongo-blockchain
+    networks:
+      - blockchain    
+
+  blockchain-node-2:
+    container_name: blockchain-node-2
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      nodeUrl: http://blockchain-node-2:3000
+      nodesUrls: '[]'
+    ports:
+      - 3002:3000
+    command: npm run dev
+    depends_on:
+      - mongo-blockchain
+    networks:
+      - blockchain  
+networks:
+  blockchain:
+    driver: bridge
